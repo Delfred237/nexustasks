@@ -9,6 +9,12 @@ jwt:
   access-token-expiration: 900000 # 15 minutes
   refresh-token-expiration: 604800000 # 7 days
 
+security:
+  otp:
+    ttl-minutes: 15
+    max-attempts: 5
+    resend-cooldown-seconds: 60
+
 server:
   port: 8080
   servlet:
