@@ -17,6 +17,9 @@ spring:
     baseline-on-migrate: true # Utile si la base existe déjà mais n'a pas l'historique Flyway
     locations: classpath:db/migration
     validate-on-migrate: true
+  mail:
+    host: localhost
+    port: 1025
 
 logging:
   level:

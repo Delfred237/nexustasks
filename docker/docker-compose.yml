@@ -12,6 +12,15 @@ services:
     networks:
       - nexus_network
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: nexustasks_mailpit
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI : http://localhost:8025
+    networks:
+      - nexus_network
+
 volumes:
   mysql_data:
 

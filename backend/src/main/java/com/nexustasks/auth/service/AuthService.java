@@ -184,6 +184,70 @@ public class AuthService {
         );
     }
 
+    @Transactional
+    public AuthResponse refresh(RefreshRequest request) {
+        String tokenValue = request.refreshToken();
+        if (tokenValue == null || tokenValue.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing refresh token");
+        }
+
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(tokenValue)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+
+        // 1) Détection de vol : si le token a déjà été "tourné", c'est suspect
+        if (refreshToken.getReplacedBy() != null) {
+            log.warn("SECURITY: Reuse of rotated refresh token detected for user {}. Revoking all tokens.",
+                    refreshToken.getUser().getEmail());
+            refreshTokenRepository.deleteByUserId(refreshToken.getUser().getId());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session compromised, all tokens revoked");
+        }
+
+        // 2) Vérification expiration
+        if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token expired");
+        }
+
+        User user = refreshToken.getUser();
+
+        // 3) Marquer l'ancien token comme remplacé (rotation)
+        String newRefreshTokenValue = UUID.randomUUID().toString();
+        refreshToken.setReplacedBy(newRefreshTokenValue);
+        refreshTokenRepository.save(refreshToken);
+
+        // 4) Créer le nouveau refresh token
+        RefreshToken newRefreshToken = RefreshToken.builder()
+                .user(user)
+                .token(newRefreshTokenValue)
+                .expiryDate(Instant.now().plusMillis(refreshTokenExpiration))
+                .build();
+        refreshTokenRepository.save(newRefreshToken);
+
+        // 5) Générer un nouvel access token
+        var userDetails = new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPasswordHash(),
+                java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        );
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", user.getRole().name());
+        String newAccessToken = jwtService.generateToken(extraClaims, userDetails);
+
+        return new AuthResponse(
+                newAccessToken,
+                newRefreshTokenValue,
+                user.getPublicId(),
+                user.getRole().name()
+        );
+    }
+
+    @Transactional
+    public void logout(User user) {
+        // Révoque TOUS les refresh tokens de l'utilisateur
+        refreshTokenRepository.deleteByUserId(user.getId());
+        log.info("User {} logged out, all refresh tokens revoked", user.getEmail());
+    }
+
 
     // =====================================================
     // PRIVATE HELPERS

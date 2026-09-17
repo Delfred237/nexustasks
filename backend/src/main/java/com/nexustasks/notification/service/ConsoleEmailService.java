@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
  * Le code OTP n'est JAMAIS loggé en production ; il ne l'est ici que pour permettre le test local.
  */
 @Service
-@Profile("dev")
+@Profile({"(dev & !mail)", "(test & !mail)"})
 @Slf4j
 public class ConsoleEmailService implements EmailService {
 

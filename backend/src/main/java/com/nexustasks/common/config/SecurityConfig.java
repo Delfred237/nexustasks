@@ -48,7 +48,13 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/auth/**", "/actuator/**") // Routes publiques sans CSRF
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/actuator/**").permitAll()
+                        .requestMatchers("/auth/register",
+                                "/auth/verify-email",
+                                "/auth/resend-verification",
+                                "/auth/login",
+                                "/auth/refresh",
+                                "/actuator/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

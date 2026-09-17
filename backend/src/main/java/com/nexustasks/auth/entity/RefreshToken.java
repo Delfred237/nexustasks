@@ -28,4 +28,12 @@ public class RefreshToken {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    /**
+     * Si non-null, ce token a été "tourné" (rotated) et remplacé par un nouveau.
+     * S'il est représenté à l'endpoint /refresh alors qu'il a déjà été remplacé,
+     * c'est un signe de vol de token -> on révoque toute la session.
+     */
+    @Column(name = "replaced_by")
+    private String replacedBy;
 }
