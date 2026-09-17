@@ -4,6 +4,11 @@ spring:
   profiles:
     active: dev # Profil par défaut si aucun n'est spécifié
 
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F428472B4B62503545357565B5258} # 512-bit key for HS512 (Dev default, MUST override in Prod)
+  access-token-expiration: 900000 # 15 minutes
+  refresh-token-expiration: 604800000 # 7 days
+
 server:
   port: 8080
   servlet:
