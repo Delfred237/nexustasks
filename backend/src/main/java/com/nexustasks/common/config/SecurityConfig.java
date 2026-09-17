@@ -1,6 +1,7 @@
 package com.nexustasks.common.config;
 
 import com.nexustasks.security.filter.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -45,7 +47,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(requestHandler)
-                        .ignoringRequestMatchers("/auth/**", "/actuator/**") // Routes publiques sans CSRF
+                        .ignoringRequestMatchers(
+                                "/auth/**",
+                                "/actuator/**"
+                        )
+                        .ignoringRequestMatchers(bearerTokenRequestMatcher())
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register",
@@ -63,6 +69,22 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * RequestMatcher qui "matche" (retourne true) si la requête contient un header Bearer.
+     * Quand ce matcher retourne true, Spring IGNORE le CSRF pour cette requête.
+     *
+     * Logique :
+     *   - Mobile (Flutter) envoie "Authorization: Bearer xxx"  → matche → pas de CSRF ✓
+     *   - Web (React) envoie le token via cookie HttpOnly      → ne matche pas → CSRF requis ✓
+     *   - curl/Postman test avec Bearer                        → matche → pas de CSRF ✓
+     */
+    private RequestMatcher bearerTokenRequestMatcher() {
+        return request -> {
+            String authHeader = request.getHeader("Authorization");
+            return authHeader != null && authHeader.startsWith("Bearer ");
+        };
     }
 
     @Bean
