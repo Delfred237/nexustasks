@@ -48,7 +48,7 @@ public class BaseEntity {
     private Instant deletedAt;
 
     @PrePersist
-    public void prePersist() {
+    protected void prePersist() {
         if (this.publicId == null) {
             this.publicId = UUID.randomUUID().toString();
         }
