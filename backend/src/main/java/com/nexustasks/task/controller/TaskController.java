@@ -4,6 +4,8 @@ import com.nexustasks.security.service.SecurityUserService;
 import com.nexustasks.task.dto.CreateTaskRequest;
 import com.nexustasks.task.dto.TaskResponse;
 import com.nexustasks.task.dto.UpdateTaskRequest;
+import com.nexustasks.task.entity.TaskPriority;
+import com.nexustasks.task.entity.TaskStatus;
 import com.nexustasks.task.service.TaskService;
 import com.nexustasks.user.entity.User;
 import jakarta.validation.Valid;
@@ -24,7 +26,7 @@ public class TaskController {
     private final TaskService taskService;
     private final SecurityUserService securityUserService;
 
-    @GetMapping
+    @GetMapping("/tasks")
     public ResponseEntity<Page<TaskResponse>> getTasks(
             @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
@@ -37,6 +39,27 @@ public class TaskController {
     public ResponseEntity<TaskResponse> getTask(@PathVariable String publicId) {
         User currentUser = securityUserService.getCurrentUser();
         return ResponseEntity.ok(taskService.getTaskByPublicId(publicId, currentUser));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<TaskResponse>> searchTasks(
+            @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskPriority priority,
+            @RequestParam(required = false) String category, // C'est le publicId de la catégorie
+            @RequestParam(required = false) String search,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        User currentUser = securityUserService.getCurrentUser();
+        return ResponseEntity.ok(taskService.searchTasks(
+                currentUser,
+                includeArchived,
+                status,
+                priority,
+                category,
+                search,
+                pageable
+        ));
     }
 
     @PostMapping

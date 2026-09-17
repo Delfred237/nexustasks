@@ -7,11 +7,15 @@ import com.nexustasks.task.dto.CreateTaskRequest;
 import com.nexustasks.task.dto.TaskResponse;
 import com.nexustasks.task.dto.UpdateTaskRequest;
 import com.nexustasks.task.entity.Task;
+import com.nexustasks.task.entity.TaskPriority;
+import com.nexustasks.task.entity.TaskStatus;
 import com.nexustasks.task.repository.TaskRepository;
+import com.nexustasks.task.repository.specification.TaskSpecifications;
 import com.nexustasks.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +45,35 @@ public class TaskService {
         Task task = findTaskByPublicId(publicId);
         checkOwnership(task, user);
         return TaskResponse.from(task);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TaskResponse> searchTasks(
+            User user,
+            boolean includeArchived,
+            TaskStatus status,
+            TaskPriority priority,
+            String categoryPublicId,
+            String search,
+            Pageable pageable
+    ) {
+        // 1. Spécifications de base (Sécurité + Soft Delete)
+        Specification<Task> spec = Specification.where(TaskSpecifications.hasOwner(user.getId()))
+                .and(TaskSpecifications.isNotDeleted());
+
+        // 2. Gestion de l'archivage
+        if (!includeArchived) {
+            spec = spec.and(TaskSpecifications.isArchived(false));
+        }
+
+        // 3. Filtres optionnels dynamiques
+        spec = spec.and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasPriority(priority))
+                .and(TaskSpecifications.belongsToCategory(categoryPublicId))
+                .and(TaskSpecifications.titleOrDescriptionContains(search));
+
+        // 4. Exécution de la requête dynamique avec pagination et tri
+        return taskRepository.findAll(spec, pageable).map(TaskResponse::from);
     }
 
     @Transactional
