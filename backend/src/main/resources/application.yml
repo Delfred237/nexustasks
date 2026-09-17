@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: NexusTasks
+  profiles:
+    active: dev # Profil par défaut si aucun n'est spécifié
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never # Sécurité : ne jamais exposer les stack traces
+    include-path: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
