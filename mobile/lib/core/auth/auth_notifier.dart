@@ -41,6 +41,50 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Login : stocke les tokens puis charge le profil.
+  Future<User> login({required String email, required String password}) async {
+    final dio = ref.read(dioProvider);
+    final storage = ref.read(secureStorageProvider);
+    final repo = AuthRepository(dio);
+
+    final tokens = await repo.login(email, password);
+    await storage.setAccessToken(tokens.accessToken);
+    await storage.setRefreshToken(tokens.refreshToken);
+
+    final user = await repo.me();
+    state = AuthState(status: AuthStatus.authenticated, user: user);
+    return user;
+  }
+
+  /// Register : crée le compte (non vérifié). Ne change PAS l'état auth.
+  Future<User> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {
+    final repo = AuthRepository(ref.read(dioProvider));
+    return repo.register(
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password,
+    );
+  }
+
+  Future<void> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
+    final repo = AuthRepository(ref.read(dioProvider));
+    await repo.verifyEmail(email, code);
+  }
+
+  Future<void> resendVerification(String email) async {
+    final repo = AuthRepository(ref.read(dioProvider));
+    await repo.resendVerification(email);
+  }
+
   /// Appelé après un login/register réussi.
   Future<void> setSession({
     required String accessToken,

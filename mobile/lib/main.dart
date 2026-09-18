@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexustasks_mobile/core/config/app_config.dart';
 import 'package:nexustasks_mobile/core/router/app_router.dart';
 import 'package:nexustasks_mobile/core/theme/app_theme.dart';
 
 void main() {
+  debugPrint('🌐 API base URL: ${AppConfig.apiBaseUrl}');
   runApp(ProviderScope(child: const NexusTasksApp()));
 }
 
