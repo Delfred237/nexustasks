@@ -5,12 +5,19 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: nexustasks_dev
+      MYSQL_USER: nexustasks
+      MYSQL_PASSWORD: nexustasks
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - nexus_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mailpit:
     image: axllent/mailpit:latest
@@ -20,6 +27,11 @@ services:
       - "8025:8025"  # Web UI : http://localhost:8025
     networks:
       - nexus_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8025/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   backend:
     build:
@@ -27,7 +39,7 @@ services:
       dockerfile: Dockerfile
     container_name: nexustasks_backend
     environment:
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: dev,mail
       # Database
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/nexustasks_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: nexustasks
@@ -53,7 +65,7 @@ services:
       mailpit:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
