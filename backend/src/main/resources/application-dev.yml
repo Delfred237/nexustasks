@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3307/nexustasks_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: root
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/nexustasks_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -18,8 +18,29 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
   mail:
-    host: localhost
-    port: 1025
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F428472B4B62503545357565B5258}
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+app:
+  storage:
+    local:
+      base-path: ${STORAGE_PATH:./storage}
+    max-file-size: 2MB
+  cookie:
+    secure: false
+    same-site: Lax
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  mail:
+    from: ${MAIL_FROM:noreply@nexustasks.com}
+    from-name: ${MAIL_FROM_NAME:NexusTasks}
 
 logging:
   level:

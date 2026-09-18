@@ -21,8 +21,47 @@ services:
     networks:
       - nexus_network
 
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: nexustasks_backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/nexustasks_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: nexustasks
+      SPRING_DATASOURCE_PASSWORD: nexustasks
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F428472B4B62503545357565B5258}
+      # Mail
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      # CORS
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      # Storage
+      STORAGE_PATH: /app/storage
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_storage:/app/storage
+    networks:
+      - nexus_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 volumes:
   mysql_data:
+  backend_storage:
 
 networks:
   nexus_network:
