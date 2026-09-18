@@ -70,6 +70,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+  
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: nexustasks_frontend
+    ports:
+      - "5173:8080"   # Même port qu'en dev pour ne pas changer tes habitudes
+    networks:
+      - nexus_network
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   mysql_data:
