@@ -2,13 +2,17 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthGuard } from "@/app/providers/AuthGuard";
+import AuthenticatedLayout from "@/app/layouts/AuthenticatedLayout";
 
+// Pages publiques (lazy)
 const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
 const VerifyEmailPage = lazy(
   () => import("@/features/auth/pages/VerifyEmailPage"),
 );
+
+// Pages dashboard (lazy)
 const DashboardPage = lazy(
   () => import("@/features/dashboard/pages/DashboardPage"),
 );
@@ -30,6 +34,7 @@ function LoadingFallback() {
 }
 
 export const router = createBrowserRouter([
+  // ===== ROUTES PUBLIQUES =====
   {
     path: "/",
     element: (
@@ -62,53 +67,63 @@ export const router = createBrowserRouter([
       </Suspense>
     ),
   },
+
+  // ===== ROUTES AUTHENTIFIÉES =====
   {
     path: "/app",
-    element: <AuthGuard />, // ← Protège toutes les routes /app/*
+    element: <AuthGuard />,
     children: [
       { index: true, element: <Navigate to="/app/dashboard" replace /> },
       {
-        path: "dashboard",
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <DashboardPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: "tasks",
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <TasksPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: "categories",
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <CategoriesPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: "notifications",
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <NotificationsPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: "profile",
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <ProfilePage />
-          </Suspense>
-        ),
+        // Layout avec Sidebar + Header (PAS lazy, pour éviter les problèmes)
+        element: <AuthenticatedLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <DashboardPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "tasks",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <TasksPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "categories",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <CategoriesPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "notifications",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <NotificationsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "profile",
+            element: (
+              <Suspense fallback={<LoadingFallback />}>
+                <ProfilePage />
+              </Suspense>
+            ),
+          },
+        ],
       },
     ],
   },
+
+  // ===== 404 =====
   {
     path: "*",
     element: (
