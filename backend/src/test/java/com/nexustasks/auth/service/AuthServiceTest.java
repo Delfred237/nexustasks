@@ -6,6 +6,8 @@ import com.nexustasks.auth.dto.UserResponse;
 import com.nexustasks.auth.entity.VerificationCode;
 import com.nexustasks.auth.repository.RefreshTokenRepository;
 import com.nexustasks.auth.repository.VerificationCodeRepository;
+import com.nexustasks.common.exception.BusinessException;
+import com.nexustasks.common.exception.ErrorCode;
 import com.nexustasks.notification.service.EmailService;
 import com.nexustasks.security.service.JwtService;
 import com.nexustasks.user.entity.User;
@@ -99,8 +101,12 @@ class AuthServiceTest {
 
         // When & Then
         assertThatThrownBy(() -> authService.register(validRequest))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("409");
+                .isInstanceOf(BusinessException.class)
+                .satisfies(ex -> {
+                    BusinessException bex = (BusinessException) ex;
+                    assertThat(bex.getErrorCode()).isEqualTo(ErrorCode.EMAIL_ALREADY_EXISTS);
+                    assertThat(bex.getErrorCode().getHttpStatus()).isEqualTo(409);
+                });
 
         verify(userRepository, never()).save(any());
     }
@@ -152,7 +158,12 @@ class AuthServiceTest {
         // When & Then
         assertThatThrownBy(() -> authService.verifyEmail(
                 new com.nexustasks.auth.dto.VerifyEmailRequest("alice@example.com", "999")
-        )).isInstanceOf(ResponseStatusException.class);
+        ))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(ex -> {
+                    BusinessException bex = (BusinessException) ex;
+                    assertThat(bex.getErrorCode()).isEqualTo(ErrorCode.INVALID_OTP);
+                });
 
         assertThat(code.getAttempts()).isEqualTo(1);
         verify(verificationCodeRepository, times(1)).save(code);

@@ -14,6 +14,13 @@ spring:
           auth: ${MAIL_AUTH:false}
           starttls:
             enable: ${MAIL_STARTTLS:false}
+  mvc:
+    problem-details:
+      enabled: true  # Active le support natif Problem Details
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false  # ISO 8601 pour les dates
+    default-property-inclusion: non_null
 
 app:
   mail:

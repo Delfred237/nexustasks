@@ -1,6 +1,8 @@
 package com.nexustasks.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nexustasks.common.dto.ApiError;
+import com.nexustasks.common.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import java.util.Map;
 @Slf4j
 public class RestAccessDeniedHandler implements AccessDeniedHandler {
 
+    private static final String PROBLEM_TYPE_BASE = "https://nexustasks.com/errors/";
     private final ObjectMapper objectMapper;
 
     @Override
@@ -42,13 +45,16 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", Instant.now().toString());
-        body.put("status", HttpStatus.FORBIDDEN.value());
-        body.put("error", "Forbidden");
-        body.put("message", "You do not have permission to access this resource.");
-        body.put("path", request.getRequestURI());
+        ApiError error = ApiError.builder()
+                .type(PROBLEM_TYPE_BASE + "access-denied")
+                .title("Access denied")
+                .status(ErrorCode.ACCESS_DENIED.getHttpStatus())
+                .detail("You do not have permission to access this resource.")
+                .errorCode(ErrorCode.ACCESS_DENIED.name())
+                .timestamp(Instant.now())
+                .instance(request.getRequestURI())
+                .build();
 
-        objectMapper.writeValue(response.getOutputStream(), body);
+        objectMapper.writeValue(response.getOutputStream(), error);
     }
 }

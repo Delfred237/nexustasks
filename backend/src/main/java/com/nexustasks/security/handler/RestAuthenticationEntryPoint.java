@@ -1,6 +1,8 @@
 package com.nexustasks.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nexustasks.common.dto.ApiError;
+import com.nexustasks.common.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import java.util.Map;
 @Slf4j
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    private static final String PROBLEM_TYPE_BASE = "https://nexustasks.com/errors/";
     private final ObjectMapper objectMapper;
 
     @Override
@@ -42,13 +45,16 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", Instant.now().toString());
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        body.put("error", "Unauthorized");
-        body.put("message", "Authentication required. Please provide a valid token.");
-        body.put("path", request.getRequestURI());
+        ApiError error = ApiError.builder()
+                .type(PROBLEM_TYPE_BASE + "unauthorized")
+                .title("Authentication required")
+                .status(ErrorCode.INVALID_CREDENTIALS.getHttpStatus())
+                .detail("Authentication required. Please provide a valid token.")
+                .errorCode(ErrorCode.INVALID_CREDENTIALS.name())
+                .timestamp(Instant.now())
+                .instance(request.getRequestURI())
+                .build();
 
-        objectMapper.writeValue(response.getOutputStream(), body);
+        objectMapper.writeValue(response.getOutputStream(), error);
     }
 }

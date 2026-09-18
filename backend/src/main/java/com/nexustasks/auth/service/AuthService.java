@@ -8,13 +8,13 @@ import com.nexustasks.auth.entity.RefreshToken;
 import com.nexustasks.auth.entity.VerificationCode;
 import com.nexustasks.auth.repository.RefreshTokenRepository;
 import com.nexustasks.auth.repository.VerificationCodeRepository;
+import com.nexustasks.common.exception.BusinessException;
+import com.nexustasks.common.exception.ErrorCode;
 import com.nexustasks.notification.service.EmailService;
 import com.nexustasks.security.service.JwtService;
 import com.nexustasks.user.entity.Role;
 import com.nexustasks.user.entity.User;
 import com.nexustasks.user.repository.UserRepository;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,14 +25,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -71,7 +66,7 @@ public class AuthService {
         String normalizedEmail = request.email().trim().toLowerCase();
 
         if (userRepository.existsByEmail(normalizedEmail)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         User user = User.builder()
@@ -101,21 +96,21 @@ public class AuthService {
 
         VerificationCode code = verificationCodeRepository
                 .findFirstByUserIdAndUsedFalseOrderByCreatedAtDesc(user.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No active verification code"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.OTP_ACTIVE_NOT_FOUND));
 
         if (code.getExpiresAt().isBefore(Instant.now())) {
-            throw new ResponseStatusException(HttpStatus.GONE, "Verification code expired");
+            throw new BusinessException(ErrorCode.OTP_EXPIRED);
         }
 
         if (code.getAttempts() >= otpProperties.maxAttempts()) {
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many attempts, request a new code");
+            throw new BusinessException(ErrorCode.OTP_MAX_ATTEMPTS);
         }
 
         String submittedHash = sha256(request.code());
         if (!submittedHash.equals(code.getCodeHash())) {
             code.setAttempts(code.getAttempts() + 1);
             verificationCodeRepository.save(code);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification code");
+            throw new BusinessException(ErrorCode.INVALID_OTP);
         }
 
         code.setUsed(true);
@@ -135,7 +130,7 @@ public class AuthService {
         User user = findUserByEmail(request.email());
 
         if (user.isEmailVerified()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already verified");
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_VERIFIED);
         }
 
         // Cooldown de renvoi
@@ -144,7 +139,7 @@ public class AuthService {
                 .ifPresent(code -> {
                     Instant cooldownEnd = code.getCreatedAt().plusSeconds(otpProperties.resendCooldownSeconds());
                     if (Instant.now().isBefore(cooldownEnd)) {
-                        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Please wait before requesting a new code");
+                        throw new BusinessException(ErrorCode.OTP_MAX_ATTEMPTS);
                     }
                 });
 
@@ -161,10 +156,7 @@ public class AuthService {
         if (user != null && !user.isEmailVerified()) {
             // On révèle volontairement que le compte n'est pas vérifié
             // pour améliorer l'UX (l'utilisateur sait qu'il doit vérifier son email)
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Email not verified. Please check your inbox for the verification code."
-            );
+            throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
 
         // 2. Tenter l'authentification Spring Security
@@ -175,19 +167,16 @@ public class AuthService {
             );
         } catch (BadCredentialsException e) {
             // Message générique pour ne pas révéler si l'email existe ou non
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Invalid email or password"
+            throw new BusinessException(
+                    ErrorCode.INVALID_CREDENTIALS
             );
         } catch (DisabledException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Account is disabled"
+            throw new BusinessException(
+                    ErrorCode.ACCOUNT_DISABLED
             );
         } catch (LockedException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.LOCKED,
-                    "Account is locked"
+            throw new BusinessException(
+                    ErrorCode.ACCOUNT_LOCKED
             );
         }
 
@@ -234,24 +223,24 @@ public class AuthService {
     public AuthResponse refresh(RefreshRequest request) {
         String tokenValue = request.refreshToken();
         if (tokenValue == null || tokenValue.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing refresh token");
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
         }
 
         RefreshToken refreshToken = refreshTokenRepository.findByToken(tokenValue)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
 
         // 1) Détection de vol : si le token a déjà été "tourné", c'est suspect
         if (refreshToken.getReplacedBy() != null) {
             log.warn("SECURITY: Reuse of rotated refresh token detected for user {}. Revoking all tokens.",
                     refreshToken.getUser().getEmail());
             refreshTokenRepository.deleteByUserId(refreshToken.getUser().getId());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session compromised, all tokens revoked");
+            throw new BusinessException(ErrorCode.TOKEN_REVOKED);
         }
 
         // 2) Vérification expiration
         if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token expired");
+            throw new BusinessException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
         User user = refreshToken.getUser();
@@ -300,7 +289,7 @@ public class AuthService {
     // =====================================================
     private User findUserByEmail(String email) {
         return userRepository.findByEmail(email.trim().toLowerCase())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     private void createAndSendVerificationCode(User user) {
