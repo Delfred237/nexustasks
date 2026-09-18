@@ -11,6 +11,7 @@ import com.nexustasks.task.dto.CreateTaskRequest;
 import com.nexustasks.task.dto.TaskResponse;
 import com.nexustasks.task.dto.UpdateTaskRequest;
 import com.nexustasks.task.entity.Task;
+import com.nexustasks.task.entity.TaskActivityType;
 import com.nexustasks.task.entity.TaskPriority;
 import com.nexustasks.task.entity.TaskStatus;
 import com.nexustasks.task.repository.TaskRepository;
@@ -34,6 +35,7 @@ public class TaskService {
     private final CategoryRepository categoryRepository;
     private final SlugGenerator slugGenerator;
     private final ApplicationEventPublisher eventPublisher;
+    private final TaskActivityService taskActivityService;
 
     @Transactional(readOnly = true)
     public Page<TaskResponse> getTasksForUser(User user, boolean includeArchived, Pageable pageable) {
@@ -111,6 +113,8 @@ public class TaskService {
 
         task = taskRepository.save(task);
 
+        taskActivityService.logActivity(task, user, TaskActivityType.TASK_CREATED, "Tâche créée");
+
         // Publier l'événement
         eventPublisher.publishEvent(new TaskCreatedEvent(this, task));
 
@@ -153,6 +157,9 @@ public class TaskService {
 
         task = taskRepository.save(task);
 
+        // Loguer l'activité de mise à jour
+        taskActivityService.logActivity(task, user, TaskActivityType.TASK_UPDATED, "Tâche mise à jour");
+
         // Publier l'événement uniquement si on vient de passer à COMPLETED
         if (!wasCompleted && isNowCompleted) {
             eventPublisher.publishEvent(new TaskCompletedEvent(this, task));
@@ -168,6 +175,7 @@ public class TaskService {
         if (!task.isArchived()) {
             task.setArchived(true);
             task = taskRepository.save(task);
+            taskActivityService.logActivity(task, user, TaskActivityType.TASK_ARCHIVED, "Tâche archivée");
             eventPublisher.publishEvent(new TaskArchivedEvent(this, task)); // ← NOUVEAU
         }
         return TaskResponse.from(task);
@@ -180,6 +188,7 @@ public class TaskService {
         if (task.isArchived()) {
             task.setArchived(false);
             task = taskRepository.save(task);
+            taskActivityService.logActivity(task, user, TaskActivityType.TASK_RESTORED, "Tâche restaurée");
             eventPublisher.publishEvent(new TaskRestoredEvent(this, task)); // ← NOUVEAU
         }
         return TaskResponse.from(task);
@@ -230,5 +239,10 @@ public class TaskService {
                 throw new IllegalStateException("Could not generate unique slug after 100 attempts");
             }
         }
+    }
+
+    public Task getTaskEntityByPublicId(String publicId, User currentUser) {
+        return taskRepository.findByPublicIdAndDeletedFalse(publicId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found"));
     }
 }

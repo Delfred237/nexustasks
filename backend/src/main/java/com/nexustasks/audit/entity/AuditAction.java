@@ -1,0 +1,19 @@
+package com.nexustasks.audit.entity;
+
+public enum AuditAction {
+    USER_REGISTERED,
+    EMAIL_VERIFIED,
+    USER_LOGIN,
+    USER_LOGOUT,
+    PASSWORD_CHANGED,
+    TOKEN_REFRESHED,
+    TASK_CREATED,
+    TASK_UPDATED,
+    TASK_ARCHIVED,
+    TASK_RESTORED,
+    TASK_DELETED,
+    CATEGORY_CREATED,
+    CATEGORY_UPDATED,
+    CATEGORY_DELETED,
+    AVATAR_UPDATED
+}

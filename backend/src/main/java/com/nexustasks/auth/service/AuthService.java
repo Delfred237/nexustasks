@@ -1,5 +1,7 @@
 package com.nexustasks.auth.service;
 
+import com.nexustasks.audit.entity.AuditAction;
+import com.nexustasks.audit.event.AuditEvent;
 import com.nexustasks.auth.config.OtpProperties;
 import com.nexustasks.auth.dto.*;
 import com.nexustasks.auth.entity.RefreshToken;
@@ -16,6 +18,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,6 +56,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final OtpProperties otpProperties;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -175,6 +179,18 @@ public class AuthService {
                 .expiryDate(Instant.now().plusMillis(refreshTokenExpiration))
                 .build();
         refreshTokenRepository.save(refreshToken);
+
+        // Publier l'événement d'audit
+        eventPublisher.publishEvent(new AuditEvent(
+                this,
+                AuditAction.USER_LOGIN,
+                user.getPublicId(),
+                user.getEmail(),
+                "USER",
+                user.getPublicId(),
+                null, // IP sera capturée au niveau du controller
+                null
+        ));
 
         return new AuthResponse(
                 accessToken,

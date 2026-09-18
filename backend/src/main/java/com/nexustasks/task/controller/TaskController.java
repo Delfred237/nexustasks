@@ -2,10 +2,13 @@ package com.nexustasks.task.controller;
 
 import com.nexustasks.security.service.SecurityUserService;
 import com.nexustasks.task.dto.CreateTaskRequest;
+import com.nexustasks.task.dto.TaskActivityResponse;
 import com.nexustasks.task.dto.TaskResponse;
 import com.nexustasks.task.dto.UpdateTaskRequest;
+import com.nexustasks.task.entity.Task;
 import com.nexustasks.task.entity.TaskPriority;
 import com.nexustasks.task.entity.TaskStatus;
+import com.nexustasks.task.repository.TaskActivityRepository;
 import com.nexustasks.task.service.TaskService;
 import com.nexustasks.user.entity.User;
 import jakarta.validation.Valid;
@@ -25,6 +28,7 @@ public class TaskController {
 
     private final TaskService taskService;
     private final SecurityUserService securityUserService;
+    private final TaskActivityRepository taskActivityRepository;
 
     @GetMapping("/tasks")
     public ResponseEntity<Page<TaskResponse>> getTasks(
@@ -60,6 +64,19 @@ public class TaskController {
                 search,
                 pageable
         ));
+    }
+
+    @GetMapping("/{publicId}/activities")
+    public ResponseEntity<Page<TaskActivityResponse>> getTaskActivities(
+            @PathVariable String publicId,
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        User currentUser = securityUserService.getCurrentUser();
+        Task task = taskService.getTaskEntityByPublicId(publicId, currentUser); // Méthode à ajouter au service
+        return ResponseEntity.ok(
+                taskActivityRepository.findByTaskIdAndDeletedFalseOrderByCreatedAtDesc(task.getId(), pageable)
+                        .map(TaskActivityResponse::from)
+        );
     }
 
     @PostMapping
