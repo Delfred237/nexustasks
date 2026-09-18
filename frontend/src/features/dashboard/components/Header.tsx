@@ -1,18 +1,21 @@
+import { useNavigate } from "react-router-dom";
 import { Menu, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/hooks/useSidebar";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
+import { useUnreadCount } from "@/features/notifications/hooks/useNotifications";
 import { UserDropdown } from "./UserDropdown";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
   const { toggle } = useSidebar();
   const isDesktop = useIsDesktop();
+  const navigate = useNavigate();
+  const { data: unreadCount } = useUnreadCount();
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 px-4">
       <div className="flex items-center gap-2">
-        {/* Hamburger menu - visible uniquement sur mobile */}
         {!isDesktop && (
           <Button
             variant="ghost"
@@ -24,27 +27,31 @@ export function Header() {
           </Button>
         )}
 
-        {/* Titre de la page (optionnel, peut être dynamique) */}
         <h1 className="text-lg font-semibold hidden sm:block">NexusTasks</h1>
       </div>
 
       <div className="flex items-center gap-1">
-        {/* Notification bell */}
+        {/* Cloche : navigue vers les notifications + vrai compteur */}
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Notifications"
+          onClick={() => navigate("/app/notifications")}
+          aria-label={
+            unreadCount && unreadCount > 0
+              ? `Notifications (${unreadCount} unread)`
+              : "Notifications"
+          }
           className="relative"
         >
           <Bell className="h-5 w-5" />
-          {/* Badge pour les notifications non lues */}
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
+          {unreadCount && unreadCount > 0 && (
+            <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </Button>
 
-        {/* Theme toggle */}
         <ThemeToggle />
-
-        {/* User dropdown */}
         <UserDropdown />
       </div>
     </header>

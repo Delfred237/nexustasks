@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { LogOut, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { Avatar } from "@/components/Avatar";
+import { resolveAvatarUrl } from "@/lib/utils";
 
 export function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,9 +31,10 @@ export function UserDropdown() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
-  };
+    navigate("/");
+  }; // Retour à la landing page
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const initials = user
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
     : "?";
@@ -46,17 +49,12 @@ export function UserDropdown() {
         aria-expanded={isOpen}
         className="rounded-full"
       >
-        {user?.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.firstName}
-            className="h-8 w-8 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-            {initials}
-          </div>
-        )}
+        <Avatar
+          src={resolveAvatarUrl(user?.avatarUrl)}
+          firstName={user?.firstName}
+          lastName={user?.lastName}
+          className="h-8 w-8 text-xs"
+        />
       </Button>
 
       {isOpen && (

@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthGuard } from "@/app/providers/AuthGuard";
 import AuthenticatedLayout from "@/app/layouts/AuthenticatedLayout";
+import { GuestGuard } from "./providers/GuestGuard";
 
 // Pages publiques (lazy)
 const LandingPage = lazy(() => import("@/features/landing/pages/LandingPage"));
@@ -44,28 +45,33 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/login",
-    element: (
-      <Suspense fallback={<LoadingFallback />}>
-        <LoginPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/register",
-    element: (
-      <Suspense fallback={<LoadingFallback />}>
-        <RegisterPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/verify-email",
-    element: (
-      <Suspense fallback={<LoadingFallback />}>
-        <VerifyEmailPage />
-      </Suspense>
-    ),
+    element: <GuestGuard />,
+    children: [
+      {
+        path: "/login",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <LoginPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/register",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <RegisterPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "/verify-email",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <VerifyEmailPage />
+          </Suspense>
+        ),
+      },
+    ],
   },
 
   // ===== ROUTES AUTHENTIFIÉES =====

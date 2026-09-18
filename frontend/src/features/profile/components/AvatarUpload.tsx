@@ -4,6 +4,8 @@ import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { profileService } from "../services/profile.service";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { Avatar } from "@/components/Avatar";
+import { resolveAvatarUrl } from "@/lib/utils";
 
 export function AvatarUpload() {
   const { user, setUser } = useAuth();
@@ -55,6 +57,7 @@ export function AvatarUpload() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const initials = user
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
     : "?";
@@ -62,17 +65,12 @@ export function AvatarUpload() {
   return (
     <div className="flex items-center gap-4">
       {/* Avatar preview */}
-      {user?.avatarUrl ? (
-        <img
-          src={user.avatarUrl}
-          alt={`${user.firstName} ${user.lastName}`}
-          className="h-20 w-20 rounded-full object-cover"
-        />
-      ) : (
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold">
-          {initials}
-        </div>
-      )}
+      <Avatar
+        src={resolveAvatarUrl(user?.avatarUrl)}
+        firstName={user?.firstName}
+        lastName={user?.lastName}
+        className="h-20 w-20 text-2xl"
+      />
 
       {/* Actions */}
       <div className="flex flex-col gap-2">
