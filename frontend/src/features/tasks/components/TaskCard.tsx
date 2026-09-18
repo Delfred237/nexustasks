@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Archive, ArchiveRestore, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,18 +20,16 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
 }
 
-export function TaskCard({ task, onEdit }: Readonly<TaskCardProps>) {
+export const TaskCard = memo(function TaskCard({
+  task,
+  onEdit,
+}: TaskCardProps) {
   const archiveTask = useArchiveTask();
   const restoreTask = useRestoreTask();
   const deleteTask = useDeleteTask();
 
-  const handleArchive = () => {
-    archiveTask.mutate(task.publicId);
-  };
-
-  const handleRestore = () => {
-    restoreTask.mutate(task.publicId);
-  };
+  const handleArchive = () => archiveTask.mutate(task.publicId);
+  const handleRestore = () => restoreTask.mutate(task.publicId);
 
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this task?")) {
@@ -42,7 +41,6 @@ export function TaskCard({ task, onEdit }: Readonly<TaskCardProps>) {
     <div className="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          {/* Title + Category */}
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-medium text-sm sm:text-base truncate">
               {task.title}
@@ -60,30 +58,23 @@ export function TaskCard({ task, onEdit }: Readonly<TaskCardProps>) {
             )}
           </div>
 
-          {/* Description */}
           {task.description && (
             <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
               {task.description}
             </p>
           )}
 
-          {/* Meta info */}
           <div className="mt-2 flex items-center gap-2 flex-wrap">
-            {/* Status badge */}
             <span
               className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TASK_STATUS_COLORS[task.status]}`}
             >
               {TASK_STATUS_LABELS[task.status]}
             </span>
-
-            {/* Priority badge */}
             <span
               className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TASK_PRIORITY_COLORS[task.priority]}`}
             >
               {TASK_PRIORITY_LABELS[task.priority]}
             </span>
-
-            {/* Due date */}
             {task.dueDate && (
               <span className="text-xs text-muted-foreground">
                 Due: {format(new Date(task.dueDate), "MMM d, yyyy")}
@@ -92,7 +83,6 @@ export function TaskCard({ task, onEdit }: Readonly<TaskCardProps>) {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-1 shrink-0">
           <Button
             variant="ghost"
@@ -139,4 +129,4 @@ export function TaskCard({ task, onEdit }: Readonly<TaskCardProps>) {
       </div>
     </div>
   );
-}
+});

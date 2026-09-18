@@ -7,11 +7,10 @@ export default function AuthenticatedLayout() {
     <div className="min-h-screen bg-background">
       <Sidebar />
 
-      {/* Content area - décalé à droite pour laisser la place à la sidebar sur desktop */}
       <div className="lg:pl-64">
         <Header />
 
-        <main className="p-4 sm:p-6">
+        <main id="main-content" className="p-4 sm:p-6" tabIndex={-1}>
           <Outlet />
         </main>
       </div>

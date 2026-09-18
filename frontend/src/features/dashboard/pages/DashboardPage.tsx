@@ -8,6 +8,7 @@ import {
 import { StatCard } from "@/features/dashboard/components/StatCard";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useDashboardStats } from "@/features/dashboard/hooks/useDashboardStats";
+import { PageTransition } from "@/components/PageTransition";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   }
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">
@@ -64,5 +66,6 @@ export default function DashboardPage() {
         </p>
       </div>
     </div>
+    </PageTransition>
   );
 }
