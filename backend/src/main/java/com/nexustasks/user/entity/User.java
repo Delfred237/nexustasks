@@ -42,8 +42,8 @@ public class User extends BaseEntity {
     @Builder.Default
     private boolean emailVerified = false;
 
-    @Column(length = 500)
-    private String avatarUrl;
+    @Column(name = "avatar_path", length = 500)
+    private String avatarPath; // Chemin relatif sur le stockage (ex: "avatars/uuid.jpg")
 
     // Méthode utilitaire pour masquer le mot de passe dans les logs/toString
     @Override

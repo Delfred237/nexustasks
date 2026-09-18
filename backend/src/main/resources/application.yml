@@ -23,6 +23,10 @@ app:
   cookie:
     secure: ${COOKIE_SECURE:false}
     same-site: ${COOKIE_SAME_SITE:Lax}
+  storage:
+    local:
+      base-path: ${STORAGE_PATH:./storage}
+    max-file-size: ${MAX_FILE_SIZE:3MB}
 
 jwt:
   secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F428472B4B62503545357565B5258} # 512-bit key for HS512 (Dev default, MUST override in Prod)

@@ -8,7 +8,8 @@ public record UserResponse(
         String lastName,
         String email,
         String role,
-        boolean emailVerified
+        boolean emailVerified,
+        String avatarUrl
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -17,7 +18,8 @@ public record UserResponse(
                 user.getLastName(),
                 user.getEmail(),
                 user.getRole().name(),
-                user.isEmailVerified()
+                user.isEmailVerified(),
+                user.getAvatarPath()
         );
     }
 }

@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .csrfTokenRequestHandler(requestHandler)
                         .ignoringRequestMatchers(
                                 "/auth/**",
+                                "/files/**",
                                 "/actuator/**"
                         )
                         .ignoringRequestMatchers(bearerTokenRequestMatcher())
@@ -59,6 +60,7 @@ public class SecurityConfig {
                                 "/auth/resend-verification",
                                 "/auth/login",
                                 "/auth/refresh",
+                                "/files/**",
                                 "/actuator/**"
                         ).permitAll()
                         .anyRequest().authenticated()
