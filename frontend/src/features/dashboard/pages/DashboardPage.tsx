@@ -14,7 +14,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 p-8">
+    <div className="space-y-6">
       {/* Welcome header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">
