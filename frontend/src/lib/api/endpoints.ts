@@ -1,0 +1,40 @@
+export const ENDPOINTS = {
+  auth: {
+    register: '/auth/register',
+    login: '/auth/login',
+    verifyEmail: '/auth/verify-email',
+    resendVerification: '/auth/resend-verification',
+    refresh: '/auth/refresh',
+    logout: '/auth/logout',
+  },
+  users: {
+    me: '/users/me',
+    updateProfile: '/users/me',
+    changePassword: '/users/me/password',
+    uploadAvatar: '/users/me/avatar',
+    deleteAvatar: '/users/me/avatar',
+  },
+  tasks: {
+    getAll: '/tasks',
+    getById: (id: string) => `/tasks/${id}`,
+    create: '/tasks',
+    update: (id: string) => `/tasks/${id}`,
+    delete: (id: string) => `/tasks/${id}`,
+    archive: (id: string) => `/tasks/${id}/archive`,
+    restore: (id: string) => `/tasks/${id}/restore`,
+    getActivities: (id: string) => `/tasks/${id}/activities`,
+  },
+  categories: {
+    getAll: '/categories',
+    getById: (id: string) => `/categories/${id}`,
+    create: '/categories',
+    update: (id: string) => `/categories/${id}`,
+    delete: (id: string) => `/categories/${id}`,
+  },
+  notifications: {
+    getAll: '/notifications',
+    getUnreadCount: '/notifications/unread-count',
+    markAsRead: (id: string) => `/notifications/${id}/read`,
+    markAllAsRead: '/notifications/read-all',
+  },
+} as const
