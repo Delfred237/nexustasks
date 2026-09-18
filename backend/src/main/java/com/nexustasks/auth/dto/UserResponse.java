@@ -19,7 +19,21 @@ public record UserResponse(
                 user.getEmail(),
                 user.getRole().name(),
                 user.isEmailVerified(),
-                user.getAvatarPath()
+                buildAvatarUrl(user)
         );
+    }
+
+    /**
+     * Convertit le chemin de stockage interne (ex: "avatars/uuid.png")
+     * en URL publique servie par FileController (ex: "/api/files/avatars/uuid.png").
+     *
+     * Sans cette conversion, le frontend recevrait un chemin relatif invalide
+     * et l'image ne chargerait pas après un rechargement de page.
+     */
+    private static String buildAvatarUrl(User user) {
+        if (user.getAvatarPath() == null || user.getAvatarPath().isBlank()) {
+            return null;
+        }
+        return "/files/" + user.getAvatarPath();
     }
 }

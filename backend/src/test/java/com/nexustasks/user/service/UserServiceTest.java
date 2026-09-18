@@ -49,7 +49,6 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         testUser = User.builder()
-                .publicId("test-uuid")
                 .firstName("Alice")
                 .lastName("Martin")
                 .email("alice@example.com")
@@ -58,6 +57,7 @@ class UserServiceTest {
                 .enabled(true)
                 .emailVerified(true)
                 .build();
+        testUser.setPublicId("test-uuid-123");
     }
 
     // =====================================================

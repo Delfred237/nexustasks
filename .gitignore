@@ -8,6 +8,11 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *~
 
 # ==========================================
@@ -46,6 +51,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .pnpm-store/
+
+dist
+dist-ssr
+*.local
+
 
 # ==========================================
 # MOBILE (Flutter)
