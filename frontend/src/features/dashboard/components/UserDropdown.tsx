@@ -34,11 +34,6 @@ export function UserDropdown() {
     navigate("/");
   }; // Retour à la landing page
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const initials = user
-    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
-    : "?";
-
   return (
     <div className="relative" ref={dropdownRef}>
       <Button

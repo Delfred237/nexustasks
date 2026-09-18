@@ -57,11 +57,6 @@ export function AvatarUpload() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const initials = user
-    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
-    : "?";
-
   return (
     <div className="flex items-center gap-4">
       {/* Avatar preview */}
