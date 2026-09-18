@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateTask, useUpdateTask } from "../hooks/useTasks";
-import type { Task, TaskPriority, TaskStatus } from "../types/task.types";
+import { useCategories } from "@/features/categories/hooks/useCategories";
+import type { Task } from "../types/task.types";
 
 const taskSchema = z.object({
   title: z
@@ -27,7 +28,7 @@ const taskSchema = z.object({
 type TaskFormData = z.infer<typeof taskSchema>;
 
 interface TaskFormProps {
-  task?: Task | null; // null = create mode, Task = edit mode
+  task?: Task | null;
   onClose: () => void;
 }
 
@@ -35,6 +36,9 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const isEditing = !!task;
+
+  // Fetch des catégories pour le sélecteur
+  const { data: categoriesData } = useCategories();
 
   const {
     register,
@@ -49,6 +53,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
       status: "TODO",
       priority: "MEDIUM",
       dueDate: "",
+      categoryPublicId: null,
     },
   });
 
@@ -61,6 +66,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
         status: task.status,
         priority: task.priority,
         dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
+        categoryPublicId: task.category?.publicId || null,
       });
     }
   }, [task, reset]);
@@ -69,8 +75,8 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
     const payload = {
       title: data.title,
       description: data.description || undefined,
-      status: data.status as TaskStatus,
-      priority: data.priority as TaskPriority,
+      status: data.status,
+      priority: data.priority,
       dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
       categoryPublicId: data.categoryPublicId || null,
     };
@@ -114,7 +120,7 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
         )}
       </div>
 
-      {/* Status + Priority - responsive grid */}
+      {/* Status + Priority */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
@@ -142,6 +148,23 @@ export function TaskForm({ task, onClose }: TaskFormProps) {
             <option value="URGENT">Urgent</option>
           </select>
         </div>
+      </div>
+
+      {/* Category selector */}
+      <div className="space-y-2">
+        <Label htmlFor="categoryPublicId">Category</Label>
+        <select
+          id="categoryPublicId"
+          {...register("categoryPublicId")}
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+        >
+          <option value="">No category</option>
+          {categoriesData?.content.map((category) => (
+            <option key={category.publicId} value={category.publicId}>
+              {category.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Due date */}
