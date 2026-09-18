@@ -3,6 +3,10 @@ package com.nexustasks.task.service;
 import com.nexustasks.category.entity.Category;
 import com.nexustasks.category.repository.CategoryRepository;
 import com.nexustasks.common.util.SlugGenerator;
+import com.nexustasks.notification.event.TaskArchivedEvent;
+import com.nexustasks.notification.event.TaskCompletedEvent;
+import com.nexustasks.notification.event.TaskCreatedEvent;
+import com.nexustasks.notification.event.TaskRestoredEvent;
 import com.nexustasks.task.dto.CreateTaskRequest;
 import com.nexustasks.task.dto.TaskResponse;
 import com.nexustasks.task.dto.UpdateTaskRequest;
@@ -13,6 +17,7 @@ import com.nexustasks.task.repository.TaskRepository;
 import com.nexustasks.task.repository.specification.TaskSpecifications;
 import com.nexustasks.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,6 +33,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final CategoryRepository categoryRepository;
     private final SlugGenerator slugGenerator;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public Page<TaskResponse> getTasksForUser(User user, boolean includeArchived, Pageable pageable) {
@@ -104,6 +110,10 @@ public class TaskService {
                 .build();
 
         task = taskRepository.save(task);
+
+        // Publier l'événement
+        eventPublisher.publishEvent(new TaskCreatedEvent(this, task));
+
         return TaskResponse.from(task);
     }
 
@@ -136,7 +146,18 @@ public class TaskService {
         task.setDueDate(request.dueDate());
         task.setCategory(newCategory);
 
+        // Détecter si on vient de compléter la tâche
+        boolean wasCompleted = task.getStatus() == TaskStatus.COMPLETED;
+        task.setStatus(request.status());
+        boolean isNowCompleted = request.status() == TaskStatus.COMPLETED;
+
         task = taskRepository.save(task);
+
+        // Publier l'événement uniquement si on vient de passer à COMPLETED
+        if (!wasCompleted && isNowCompleted) {
+            eventPublisher.publishEvent(new TaskCompletedEvent(this, task));
+        }
+
         return TaskResponse.from(task);
     }
 
@@ -147,6 +168,7 @@ public class TaskService {
         if (!task.isArchived()) {
             task.setArchived(true);
             task = taskRepository.save(task);
+            eventPublisher.publishEvent(new TaskArchivedEvent(this, task)); // ← NOUVEAU
         }
         return TaskResponse.from(task);
     }
@@ -158,6 +180,7 @@ public class TaskService {
         if (task.isArchived()) {
             task.setArchived(false);
             task = taskRepository.save(task);
+            eventPublisher.publishEvent(new TaskRestoredEvent(this, task)); // ← NOUVEAU
         }
         return TaskResponse.from(task);
     }
