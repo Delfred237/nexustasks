@@ -1,9 +1,11 @@
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle,
-} from '@/components/ui/card'
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { VerifyEmailForm } from "../components/VerifyEmailForm";
 
 export default function VerifyEmailPage() {
   return (
@@ -16,17 +18,9 @@ export default function VerifyEmailPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="code">Verification Code</Label>
-              <Input id="code" placeholder="123456" maxLength={6} />
-            </div>
-            <Button type="submit" className="w-full">
-              Verify Email
-            </Button>
-          </form>
+          <VerifyEmailForm />
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
