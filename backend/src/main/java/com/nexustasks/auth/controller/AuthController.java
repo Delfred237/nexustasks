@@ -5,6 +5,8 @@ import com.nexustasks.auth.service.AuthCookieService;
 import com.nexustasks.auth.service.AuthService;
 import com.nexustasks.security.service.SecurityUserService;
 import com.nexustasks.user.entity.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Endpoints publics d'authentification")
 public class AuthController {
 
     private final AuthService authService;
@@ -27,24 +30,40 @@ public class AuthController {
 
 
     @PostMapping("/register")
+    @Operation(
+            summary = "Inscription d'un nouvel utilisateur",
+            description = "Crée un compte avec email non vérifié et envoie un code OTP par email."
+    )
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         UserResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/verify-email")
+    @Operation(
+            summary = "Vérification de l'email",
+            description = "Valide le code OTP reçu par email et active le compte."
+    )
     public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
         authService.verifyEmail(request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/resend-verification")
+    @Operation(
+            summary = "Renvoyer le code de vérification",
+            description = "Génère et envoie un nouveau code OTP (cooldown de 60 secondes)."
+    )
     public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
         authService.resendVerification(request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/login")
+    @Operation(
+            summary = "Authentification",
+            description = "Authentifie l'utilisateur et retourne les tokens (dans le body ET en cookies HttpOnly)."
+    )
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response
@@ -60,6 +79,10 @@ public class AuthController {
      * Mobile l'envoie dans le body JSON.
      */
     @PostMapping("/refresh")
+    @Operation(
+            summary = "Rafraîchir l'access token",
+            description = "Émet un nouvel access token (et refresh token avec rotation). Supporte cookie OU body JSON."
+    )
     public ResponseEntity<AuthResponse> refresh(
             @RequestBody(required = false) RefreshRequest request,
             HttpServletRequest httpRequest,
@@ -78,6 +101,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(
+            summary = "Déconnexion",
+            description = "Révoque tous les refresh tokens et supprime les cookies d'authentification."
+    )
     public ResponseEntity<Void> logout(HttpServletResponse response) {
         User currentUser = securityUserService.getCurrentUser();
         authService.logout(currentUser);

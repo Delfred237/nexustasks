@@ -64,3 +64,24 @@ management:
   endpoint:
     health:
       show-details: always
+
+# CORS Configuration (externalisée)
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+# OpenAPI / Swagger Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+    display-request-duration: true
+    doc-expansion: none
+    # Désactivaction le "Try it out" par défaut pour éviter les accidents
+    try-it-out-enabled: false
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  # Ne pas scanner les endpoints actuator
+  paths-to-exclude: /actuator/**

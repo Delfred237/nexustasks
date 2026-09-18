@@ -1,6 +1,7 @@
 package com.nexustasks.storage.controller;
 
 import com.nexustasks.storage.service.FileStorageService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +17,7 @@ import java.io.InputStream;
 @RestController
 @RequestMapping("/files")
 @RequiredArgsConstructor
+@Tag(name = "Files", description = "Accès aux fichiers uploadés")
 public class FileController {
 
     private final FileStorageService fileStorageService;

@@ -1,6 +1,7 @@
 package com.nexustasks.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
@@ -26,25 +27,76 @@ import java.util.Map;
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(
+        name = "ApiError",
+        description = "Erreur API au format RFC 7807 Problem Details"
+)
 public class ApiError {
 
+    @Schema(
+            description = "URI identifiant le type d'erreur (pour documentation)",
+            example = "https://nexustasks.com/errors/validation-error"
+    )
     private String type;
+
+    @Schema(
+            description = "Titre court lisible par l'humain",
+            example = "Validation failed"
+    )
     private String title;
+
+    @Schema(
+            description = "Code HTTP de l'erreur",
+            example = "400"
+    )
     private int status;
+
+    @Schema(
+            description = "Explication détaillée spécifique à l'occurrence",
+            example = "The request contains invalid fields"
+    )
     private String detail;
+
+    @Schema(
+            description = "URI de l'instance spécifique (optionnel)",
+            example = "/api/auth/register"
+    )
     private String instance;
 
     // Extensions custom
+    @Schema(
+            description = "Code métier interne pour réaction programmatique côté client",
+            example = "VALIDATION_ERROR"
+    )
     private String errorCode;
+
+    @Schema(
+            description = "Date et heure ISO 8601 de l'erreur",
+            example = "2026-09-18T10:30:45.123Z"
+    )
     private Instant timestamp;
+
+    @Schema(
+            description = "Liste détaillée des erreurs de validation (si applicable)"
+    )
     private List<FieldError> errors;
+
+    @Schema(
+            description = "Métadonnées additionnelles (optionnel)"
+    )
     private Map<String, Object> metadata;
 
     @Data
     @Builder
     public static class FieldError {
+
+        @Schema(description = "Nom du champ en erreur", example = "email")
         private String field;
+
+        @Schema(description = "Message d'erreur", example = "must be a well-formed email address")
         private String message;
+
+        @Schema(description = "Valeur rejetée", example = "invalid-email")
         private Object rejectedValue;
     }
 }

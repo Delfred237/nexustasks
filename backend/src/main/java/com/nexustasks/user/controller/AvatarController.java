@@ -4,6 +4,7 @@ import com.nexustasks.security.service.SecurityUserService;
 import com.nexustasks.user.dto.AvatarUploadResponse;
 import com.nexustasks.user.entity.User;
 import com.nexustasks.user.service.AvatarService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/users/me/avatar")
 @RequiredArgsConstructor
+@Tag(name = "Users", description = "Gestion de l'avatar utilisateur")
 public class AvatarController {
 
     private final AvatarService avatarService;

@@ -2,6 +2,7 @@ package com.nexustasks.audit.controller;
 
 import com.nexustasks.audit.dto.AuditLogResponse;
 import com.nexustasks.audit.repository.AuditLogRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/admin/audit-logs")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')") // Sécurité : réservé aux admins
+@Tag(name = "Admin", description = "Logs d'audit (réservé aux administrateurs)")
 public class AuditController {
 
     private final AuditLogRepository auditLogRepository;

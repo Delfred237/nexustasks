@@ -6,6 +6,7 @@ import com.nexustasks.category.dto.UpdateCategoryRequest;
 import com.nexustasks.category.service.CategoryService;
 import com.nexustasks.security.service.SecurityUserService;
 import com.nexustasks.user.entity.User;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
+@Tag(name = "Categories", description = "Gestion des catégories de tâches")
 public class CategoryController {
 
     private final CategoryService categoryService;

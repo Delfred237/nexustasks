@@ -4,6 +4,7 @@ import com.nexustasks.notification.dto.NotificationResponse;
 import com.nexustasks.notification.service.NotificationService;
 import com.nexustasks.security.service.SecurityUserService;
 import com.nexustasks.user.entity.User;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
+@Tag(name = "Notifications", description = "Notifications in-app de l'utilisateur")
 public class NotificationController {
 
     private final NotificationService notificationService;
