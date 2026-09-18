@@ -37,6 +37,9 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(409, "An account with this email already exists"),
     EMAIL_ALREADY_VERIFIED(400, "Email is already verified"),
     PASSWORD_TOO_WEAK(400, "Password does not meet security requirements"),
+    WRONG_CURRENT_PASSWORD(400, "The current password is incorrect"),
+    PASSWORD_REUSED(400, "The new password must be different from the current one"),
+    PROFILE_UPDATE_FAILED(500, "Failed to update profile"),
 
     // ============ RESOURCES ============
     RESOURCE_NOT_FOUND(404, "The requested resource was not found"),
