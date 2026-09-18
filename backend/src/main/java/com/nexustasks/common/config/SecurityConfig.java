@@ -1,6 +1,8 @@
 package com.nexustasks.common.config;
 
 import com.nexustasks.security.filter.JwtAuthenticationFilter;
+import com.nexustasks.security.handler.RestAccessDeniedHandler;
+import com.nexustasks.security.handler.RestAuthenticationEntryPoint;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -37,6 +40,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
 
 
     @Bean
@@ -46,16 +51,7 @@ public class SecurityConfig {
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(requestHandler)
-                        .ignoringRequestMatchers(
-                                "/auth/**",
-                                "/files/**",
-                                "/actuator/**"
-                        )
-                        .ignoringRequestMatchers(bearerTokenRequestMatcher())
-                )
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register",
                                 "/auth/verify-email",
@@ -70,25 +66,13 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint) // ← Référence au bean
+                        .accessDeniedHandler(accessDeniedHandler) // ← Référence au bean
+                );
 
         return http.build();
-    }
-
-    /**
-     * RequestMatcher qui "matche" (retourne true) si la requête contient un header Bearer.
-     * Quand ce matcher retourne true, Spring IGNORE le CSRF pour cette requête.
-     *
-     * Logique :
-     *   - Mobile (Flutter) envoie "Authorization: Bearer xxx"  → matche → pas de CSRF ✓
-     *   - Web (React) envoie le token via cookie HttpOnly      → ne matche pas → CSRF requis ✓
-     *   - curl/Postman test avec Bearer                        → matche → pas de CSRF ✓
-     */
-    private RequestMatcher bearerTokenRequestMatcher() {
-        return request -> {
-            String authHeader = request.getHeader("Authorization");
-            return authHeader != null && authHeader.startsWith("Bearer ");
-        };
     }
 
     @Bean

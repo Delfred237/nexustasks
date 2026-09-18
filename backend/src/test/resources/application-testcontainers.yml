@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    # Format spécial Testcontainers : démarre automatiquement un conteneur MySQL 8.0
+    # et le configure pour les tests. La DB "nexustasks_test" est créée à la volée.
+    url: jdbc:tc:mysql:8.0:///nexustasks_test?TC_INITSCRIPT_SCHEMA=public
+    # Pas besoin de driver-class-name, Spring Boot le détecte automatiquement
+    # Pas besoin de username/password, Testcontainers gère l'authentification
+
+  flyway:
+    enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  mail:
+    host: localhost
+    port: 1025
+    # Mailpit n'est pas nécessaire pour les tests, on désactive l'envoi réel
+    # en utilisant ConsoleEmailService via le profil "testcontainers"
+
+jwt:
+  secret: K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/UnolsMwvP4nR8tU2vW6xY0zA4bC8dE=
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+security:
+  otp:
+    ttl-minutes: 15
+    max-attempts: 5
+    resend-cooldown-seconds: 60
+
+app:
+  storage:
+    local:
+      base-path: ./storage-test
+    max-file-size: 3MB
+  cookie:
+    secure: false
+    same-site: Lax
+  frontend-url: http://localhost:5173
+  mail:
+    from: test@nexustasks.com
+    from-name: NexusTasks Test

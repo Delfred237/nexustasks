@@ -20,8 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -154,24 +153,56 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        // 1. Authentifier l'utilisateur (lance une exception si mauvais pwd)
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email().toLowerCase(), request.password())
-        );
+        String normalizedEmail = request.email().trim().toLowerCase();
 
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalStateException("User authenticated but not found"));
+        // 1. Vérifier d'abord si l'utilisateur existe et son état
+        User user = userRepository.findByEmail(normalizedEmail).orElse(null);
 
-        if (!user.isEmailVerified()) {
-            throw new IllegalStateException("Email not verified"); // À mapper vers 403 plus tard
+        if (user != null && !user.isEmailVerified()) {
+            // On révèle volontairement que le compte n'est pas vérifié
+            // pour améliorer l'UX (l'utilisateur sait qu'il doit vérifier son email)
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Email not verified. Please check your inbox for the verification code."
+            );
         }
 
-        // 2. Générer l'Access Token
+        // 2. Tenter l'authentification Spring Security
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(normalizedEmail, request.password())
+            );
+        } catch (BadCredentialsException e) {
+            // Message générique pour ne pas révéler si l'email existe ou non
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid email or password"
+            );
+        } catch (DisabledException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Account is disabled"
+            );
+        } catch (LockedException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.LOCKED,
+                    "Account is locked"
+            );
+        }
+
+        // 3. À ce stade, l'utilisateur est authentifié ET vérifié
+        if (user == null) {
+            user = userRepository.findByEmail(normalizedEmail)
+                    .orElseThrow(() -> new IllegalStateException("User authenticated but not found"));
+        }
+
+        // 4. Générer les tokens
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole().name());
-        String accessToken = jwtService.generateToken(extraClaims, (org.springframework.security.core.userdetails.User) authentication.getPrincipal());
+        String accessToken = jwtService.generateToken(extraClaims,
+                (org.springframework.security.core.userdetails.User) authentication.getPrincipal());
 
-        // 3. Générer et sauvegarder le Refresh Token
         String refreshTokenString = UUID.randomUUID().toString();
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
@@ -196,8 +227,7 @@ public class AuthService {
                 accessToken,
                 refreshTokenString,
                 user.getPublicId(),
-                user.getRole().name()
-        );
+                user.getRole().name());
     }
 
     @Transactional
