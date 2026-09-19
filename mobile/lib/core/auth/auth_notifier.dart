@@ -22,6 +22,11 @@ class AuthNotifier extends Notifier<AuthState> {
   SecureStorageService get _storage => ref.read(secureStorageProvider);
   AuthRepository get _repo => AuthRepository(ref.read(dioProvider));
 
+  /// Remplace l'utilisateur courant (après édition du profil ou de l'avatar).
+  void setUser(User user) {
+    state = AuthState(status: AuthStatus.authenticated, user: user);
+  }
+
   /// Vérifie la session au démarrage de l'app.
   Future<void> checkSession() async {
     final accessToken = await _storage.getAccessToken();

@@ -14,4 +14,9 @@ class AppConfig {
     defaultValue: 'http://192.168.1.179:8080/api',
     // defaultValue: 'http://10.0.2.2:8080/api',
   );
+
+  /// Origine (schéma + hôte + port) sans le chemin /api.
+  /// Sert à préfixer les URLs absolues renvoyées par le backend
+  /// (ex: avatarUrl = "/api/files/avatars/x.png").
+  static String get apiOrigin => Uri.parse(apiBaseUrl).origin;
 }

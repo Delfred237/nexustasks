@@ -20,6 +20,10 @@ dependencies:
   
   # HTTP Client
   dio: ^5.9.2
+
+  
+  # Media
+  image_picker: ^1.1.2
   
   # Storage
   flutter_secure_storage: ^10.2.0
