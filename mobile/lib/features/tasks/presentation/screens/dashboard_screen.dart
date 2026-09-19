@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 
 import '../../../../core/auth/auth_notifier.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -314,4 +314,4 @@ class _ErrorView extends StatelessWidget {
 }
 
 // Silence "unused import" warning pour intl si utilisé plus tard
-final _dateFormatter = DateFormat('MMM d');
+// final _dateFormatter = DateFormat('MMM d');

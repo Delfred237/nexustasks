@@ -2,8 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexustasks_mobile/core/providers/core_providers.dart';
 import 'package:nexustasks_mobile/features/tasks/domain/models/task.dart';
 
-import '../../../../core/auth/auth_repository.dart';
-
 class DashboardStats {
   const DashboardStats({
     required this.totalTasks,
@@ -24,7 +22,7 @@ class DashboardStats {
 /// Réplique exacte de la logique `useDashboardStats` du frontend React.
 final dashboardProvider = FutureProvider<DashboardStats>((ref) async {
   final dio = ref.watch(dioProvider);
-  final repo = AuthRepository(dio);
+  // final repo = AuthRepository(dio);
 
   // Réutiliser me() pour valider la session, mais les stats viennent des tasks
   // On récupère jusqu'à 1000 tâches non archivées

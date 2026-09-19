@@ -1,3 +1,21 @@
+class TaskCategory {
+  const TaskCategory({
+    required this.publicId,
+    required this.name,
+    required this.color,
+  });
+
+  final String publicId;
+  final String name;
+  final String color;
+
+  factory TaskCategory.fromJson(Map<String, dynamic> json) => TaskCategory(
+    publicId: json['publicId'] as String,
+    name: json['name'] as String,
+    color: (json['color'] as String?) ?? '#6b7280',
+  );
+}
+
 class Task {
   const Task({
     required this.publicId,
@@ -23,7 +41,7 @@ class Task {
   final bool archived;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final Map<String, dynamic>? category;
+  final TaskCategory? category;
 
   factory Task.fromJson(Map<String, dynamic> json) => Task(
     publicId: json['publicId'] as String,
@@ -40,6 +58,8 @@ class Task {
     archived: (json['archived'] as bool?) ?? false,
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
-    category: json['category'] as Map<String, dynamic>?,
+    category: json['category'] != null
+        ? TaskCategory.fromJson(json['category'] as Map<String, dynamic>)
+        : null,
   );
 }

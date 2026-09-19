@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nexustasks_mobile/features/tasks/domain/models/task.dart';
-import 'package:nexustasks_mobile/features/tasks/domain/models/task_filters.dart';
-import 'package:nexustasks_mobile/features/tasks/domain/providers/tasks_provider.dart';
-import 'package:nexustasks_mobile/features/tasks/presentation/widgets/task_card.dart';
-import 'package:nexustasks_mobile/features/tasks/presentation/widgets/task_filters_sheet.dart';
 import 'package:nexustasks_mobile/features/tasks/presentation/widgets/task_from_sheet.dart';
 
 import '../../../../core/utils/error_utils.dart';
+import '../../domain/models/task.dart';
+import '../../domain/models/task_filters.dart';
+import '../../domain/providers/tasks_provider.dart';
+import '../widgets/task_card.dart';
+import '../widgets/task_filters_sheet.dart';
 
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
@@ -156,7 +156,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                   Icon(
                     Icons.checklist_rounded,
                     size: 72,
-                    color: Theme.of(context).colorScheme.primary.withAlpha(50),
+                    color: Theme.of(context).colorScheme.primary
+                        .withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -194,7 +195,10 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                   );
                 }
                 final task = state.tasks[index];
-                return TaskCard(task: task, onEdit: (t) => _openForm(task: t));
+                return TaskCard(
+                  task: task,
+                  onEdit: (t) => _openForm(task: t),
+                );
               },
             ),
           );
