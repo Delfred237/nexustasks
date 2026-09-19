@@ -1,75 +1,53 @@
-# React + TypeScript + Vite
+# NexusTasks — Frontend Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA React 18 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui.
 
-Currently, two official plugins are available:
+## Prérequis
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node 22+
 
-## React Compiler
+## Démarrage
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev          # http://localhost:5173 (proxy /api → localhost:8080)
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Le proxy Vite rend l'API same-origin en dev : aucun problème CORS.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Commandes
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Commande | Rôle |
+|---|---|
+| `npm run dev` | Dev server HMR |
+| `npm run build` | Type-check + build production (`dist/`) |
+| `npm test` | Tests Vitest (run unique) |
+| `npm run test:watch` | Tests en mode watch |
+| `npm run test:coverage` | Tests + rapport de couverture |
+
+## Structure
 
 ```
+src/
+├── app/          # providers (Query, Theme, guards), router, layouts
+├── components/   # UI réutilisable (shadcn/ui) + ErrorBoundary, Avatar…
+├── features/     # auth, tasks, categories, notifications, profile, landing, dashboard
+├── hooks/        # useDebounce, useMediaQuery, useSidebar
+├── lib/          # client Axios (intercepteurs auth/refresh), endpoints, utils
+└── types/        # types partagés (Page<T>, ApiError RFC 7807)
+```
+
+## État serveur vs état client
+
+- **TanStack Query** : données API (cache, invalidation, polling notifications)
+- **Zustand** : session utilisateur, thème, sidebar
+
+## Docker
+
+```bash
+docker build -t nexustasks-frontend .
+docker run -p 5173:8080 nexustasks-frontend
+```
+
+Image nginx **non-root** : SPA fallback + proxy `/api` vers le service backend
+(same-origin, zéro CORS en production conteneurisée).
