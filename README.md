@@ -1,8 +1,8 @@
 # NexusTasks
 
-[![Backend CI](https://github.com/Delfred237/nexus-tasks/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/<TON_USERNAME>/nexus-tasks/actions/workflows/backend-ci.yml)
-[![Frontend CI](https://github.com/Delfred237/nexus-tasks/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/<TON_USERNAME>/nexus-tasks/actions/workflows/frontend-ci.yml)
-[![Mobile CI](https://github.com/Delfred237/nexus-tasks/actions/workflows/mobile-ci.yml/badge.svg)](https://github.com/<TON_USERNAME>/nexus-tasks/actions/workflows/mobile-ci.yml)
+[![Backend CI](https://github.com/Delfred237/nexus-tasks/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/Delfred237/nexus-tasks/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/Delfred237/nexus-tasks/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/Delfred237/nexus-tasks/actions/workflows/frontend-ci.yml)
+[![Mobile CI](https://github.com/Delfred237/nexus-tasks/actions/workflows/mobile-ci.yml/badge.svg)](https://github.com/Delfred237/nexus-tasks/actions/workflows/mobile-ci.yml)
 
 **NexusTasks** est une plateforme de gestion de tâches full-stack : une API Spring Boot
 consommée par **deux clients** — une SPA React et une application Flutter Android —
