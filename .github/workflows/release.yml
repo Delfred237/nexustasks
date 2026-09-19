@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # création de la release + upload des assets
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    name: Test, build & publish release assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---------- Backend : tests + JAR ----------
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Backend tests + package
+        working-directory: backend
+        run: mvn -B -ntp verify
+
+      - name: Stage backend JAR
+        run: cp backend/target/*.jar nexus-tasks-backend.jar
+
+      # ---------- Frontend : tests + dist ----------
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend tests + build + zip
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run test
+          npm run build
+          cd dist && zip -r ../../nexus-tasks-frontend-dist.zip .
+
+      # ---------- Mobile : tests + APK ----------
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.x'
+          channel: stable
+          cache: true
+
+      - name: Mobile tests + release APK
+        working-directory: mobile
+        run: |
+          flutter pub get
+          flutter test
+          flutter build apk --release
+          cp build/app/outputs/flutter-apk/app-release.apk ../nexus-tasks-android.apk
+
+      # ---------- Publication ----------
+      - name: Create GitHub Release with assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --title "NexusTasks ${{ github.ref_name }}" \
+            --notes "## Assets
+          - APK Android (installable)
+          - JAR backend (Spring Boot, exécutable)
+          - dist frontend (à servir via nginx ou tout serveur statique)
+
+          Voir les README pour le déploiement." \
+            nexus-tasks-android.apk#NexusTasks-Android-APK \
+            nexus-tasks-backend.jar#NexusTasks-Backend-JAR \
+            nexus-tasks-frontend-dist.zip#NexusTasks-Frontend-dist
