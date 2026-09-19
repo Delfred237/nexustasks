@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nexustasks_mobile/features/categories/presentation/screens/categories_screen.dart';
 import 'package:nexustasks_mobile/features/tasks/presentation/task_screen.dart';
 
 import '../auth/auth_notifier.dart';
@@ -69,6 +70,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/tasks',
                 builder: (context, state) => const TasksScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/categories',
+                builder: (context, state) => const CategoriesScreen(),
               ),
             ],
           ),
