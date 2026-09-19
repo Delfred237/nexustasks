@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/rendering.dart';
 
 /// Convertit une erreur réseau en message lisible.
 /// Comprend le format Problem Details (RFC 7807) du backend :
 /// { detail, title, errorCode, errors: [{ field, message }] }
+///
+/// Fonction pure : aucun effet de bord (pas de log ici).
+/// Le logging éventuel est fait par les appelants (intercepteurs, écrans).
 String describeError(Object error) {
-  debugPrint('❌ Error detail: $error');
-  
   if (error is DioException) {
     final data = error.response?.data;
 

@@ -36,11 +36,12 @@ class SplashScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.checklist_rounded,
-              size: 72,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            // Icon(
+            //   Icons.checklist_rounded,
+            //   size: 72,
+            //   color: Theme.of(context).colorScheme.primary,
+            // ),
+            Image.asset('assets/icon/app_icon.png', height: 72),
             const SizedBox(height: 24),
             Text(
               'NexusTasks',
