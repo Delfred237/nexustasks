@@ -55,6 +55,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   Future<void> _openFilters(TaskFilters current) async {
     final result = await showModalBottomSheet<TaskFilters>(
       context: context,
+      isScrollControlled: true,   // ← autorise le sheet à occuper jusqu'à 100% de la hauteur
       builder: (_) => TaskFiltersSheet(initial: current),
     );
     if (result != null) {
