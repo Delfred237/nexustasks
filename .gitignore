@@ -75,7 +75,6 @@ dist-ssr
 **/.packages
 **/.pub-cache/
 **/.pub/
-**/pubspec.lock
 
 # ==========================================
 # DOCKER & MISC
