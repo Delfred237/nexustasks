@@ -8,6 +8,52 @@
 consommée par **deux clients** — une SPA React et une application Flutter Android —
 partageant le même contrat d'API, la même sécurité et le même design system.
 
+---
+
+## Screenshots
+
+### Landing Page
+
+![Home](screenshots/landing_page.png)
+
+### Login Page
+
+![Login](screenshots/signin_web.png)
+
+### Register Page
+
+![Register](screenshots/signup_web.png)
+
+### Dashboard Web
+
+![Dashboard](screenshots/dashboard_web.png)
+
+### Task Web
+
+![Task Page](screenshots/task_web.png)
+
+### Login Mobile
+
+![Login Mobile](screenshots/login_mobile.jpg)
+
+### Register Mobile
+
+![Register Mobile](screenshots/signup_mobile.jpg)
+
+### Dashboard Mobile
+
+![Dashboard Mobile](screenshots/dashboard_mobile.jpg)
+
+### Task Mobile
+
+![Task Mobile](screenshots/task_mobile.jpg)
+
+### Profile Mobile
+
+![Profile Mobile](screenshots/profile_mobile.jpg)
+
+---
+
 ## ✨ Fonctionnalités
 
 - 🔐 **Authentification complète** : inscription, vérification email par OTP, login,
@@ -22,12 +68,12 @@ partageant le même contrat d'API, la même sécurité et le même design system
 
 ## 🧱 Stack technique
 
-| Couche | Technologies |
-|---|---|
-| **Backend** | Java 21, Spring Boot 3.5, Spring Security + JWT, Spring Data JPA, MySQL 8, Flyway, SpringDoc OpenAPI, Testcontainers |
-| **Web** | React 18, TypeScript, Vite, Tailwind CSS v4, shadcn/ui, TanStack Query, Zustand, React Router, React Hook Form + Zod, Recharts, Vitest |
-| **Mobile** | Flutter 3.47 (Android), Material 3, Riverpod 3, GoRouter, Dio, flutter_secure_storage, reactive_forms, mocktail |
-| **Infra** | Docker Compose (MySQL, Mailpit, backend, frontend nginx), GitHub Actions CI |
+| Couche      | Technologies                                                                                                                           |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Backend** | Java 21, Spring Boot 3.5, Spring Security + JWT, Spring Data JPA, MySQL 8, Flyway, SpringDoc OpenAPI, Testcontainers                   |
+| **Web**     | React 18, TypeScript, Vite, Tailwind CSS v4, shadcn/ui, TanStack Query, Zustand, React Router, React Hook Form + Zod, Recharts, Vitest |
+| **Mobile**  | Flutter 3.47 (Android), Material 3, Riverpod 3, GoRouter, Dio, flutter_secure_storage, reactive_forms, mocktail                        |
+| **Infra**   | Docker Compose (MySQL, Mailpit, backend, frontend nginx), GitHub Actions CI                                                            |
 
 ## 🏗️ Architecture
 
@@ -109,12 +155,12 @@ cd nexus-tasks/docker
 docker compose up --build -d
 ```
 
-| Service | URL |
-|---|---|
-| Frontend (nginx) | http://localhost:5173 |
-| API + Swagger UI | http://localhost:8080/swagger-ui.html |
-| Mailpit (emails dev) | http://localhost:8025 |
-| MySQL | localhost:3307 |
+| Service              | URL                                   |
+| -------------------- | ------------------------------------- |
+| Frontend (nginx)     | http://localhost:5173                 |
+| API + Swagger UI     | http://localhost:8080/swagger-ui.html |
+| Mailpit (emails dev) | http://localhost:8025                 |
+| MySQL                | localhost:3307                        |
 
 Développement sans Docker (HMR) : voir les README
 [backend](backend/README.md), [frontend](frontend/README.md), [mobile](mobile/README.md).
@@ -133,11 +179,11 @@ nexus-tasks/
 
 ## 🧪 Tests
 
-| Couche | Commande | Contenu |
-|---|---|---|
-| Backend | `cd backend && ./mvnw test` | Unitaires + intégration Testcontainers (MySQL réel) |
-| Frontend | `cd frontend && npm test` | Unitaires + widget tests Vitest / Testing Library |
-| Mobile | `cd mobile && flutter test` | Unitaires (mocktail) + widget tests |
+| Couche   | Commande                    | Contenu                                             |
+| -------- | --------------------------- | --------------------------------------------------- |
+| Backend  | `cd backend && ./mvnw test` | Unitaires + intégration Testcontainers (MySQL réel) |
+| Frontend | `cd frontend && npm test`   | Unitaires + widget tests Vitest / Testing Library   |
+| Mobile   | `cd mobile && flutter test` | Unitaires (mocktail) + widget tests                 |
 
 La CI exécute ces trois suites sur chaque push (voir badges ci-dessus).
 

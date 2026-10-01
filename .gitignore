@@ -80,3 +80,5 @@ dist-ssr
 # DOCKER & MISC
 # ==========================================
 docker-compose.override.yml
+
+screenshots/
